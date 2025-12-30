@@ -1,70 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Income Expense Calculator</title>
+    <title>Finance Quest Tracker</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
     <div class="container">
-        <header class="header">
-            <h1>Financial Overview</h1>
-            <div class="balance-summary">
-                <div class="summary-box income-box">
-                    <h3>Total Income</h3>
-                    <p id="total-income">0.00</p>
-                </div>
-                <div class="summary-box expense-box">
-                    <h3>Total Expenses</h3>
-                    <p id="total-expense">0.00</p>
-                </div>
-                <div class="summary-box net-box">
-                    <h3>Net Balance</h3>
-                    <p id="net-balance">0.00</p>
-                </div>
-            </div>
-        </header>
+        <h1>Financial Overview</h1>
 
-        <section class="form-section">
+        <div class="balance-summary">
+            <div class="summary-box income-box">
+                <h3 class="box-title">Total Income</h3>
+                <p id="total-income">0.00</p>
+            </div>
+            <div class="summary-box expense-box">
+                <h3 class="box-title">Total Expenses</h3>
+                <p id="total-expense">0.00</p>
+            </div>
+            <div class="summary-box net-box">
+                <h3 class="box-title">Net Balance</h3>
+                <p id="net-balance">0.00</p>
+            </div>
+        </div>
+
+        <div class="form-section">
             <h2>Add New Transaction</h2>
-            <form id="transaction-form">
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <input type="text" id="description" placeholder="e.g., Salary, Rent" required>
-                </div>
-                <div class="form-group">
-                    <label for="amount">Amount (Positive for Income, Negative for Expense)</label>
-                    <input type="number" id="amount" placeholder="e.g., 5000 or -500" required>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" id="add-btn">Add Transaction</button>
-                    <button type="button" id="reset-btn" onclick="resetFormFields()">Reset Fields</button>
-                    <input type="hidden" id="edit-id" value="">
-                </div>
-            </form>
-        </section>
-
-        <section class="list-section">
-            <div class="list-header">
-                <h2>Transactions History</h2>
-                <div class="filters">
-                    <label><input type="radio" name="filter" value="all" checked onchange="render()"> All</label>
-                    <label><input type="radio" name="filter" value="income" onchange="render()"> Income</label>
-                    <label><input type="radio" name="filter" value="expense" onchange="render()"> Expense</label>
-                </div>
+            
+            <div class="form-group">
+                <label for="type">Transaction Type</label>
+                <select id="type">
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
             </div>
 
-            <ul id="transaction-list" class="transaction-list">
-            </ul>
-        </section>
-    </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description" placeholder="Item Name...">
+            </div>
 
+            <div class="form-group">
+                <label for="amount">Amount</label>
+                <input type="number" id="amount" placeholder="0000">
+            </div>
+
+            <input type="hidden" id="edit-id">
+
+            <div class="form-actions">
+                <button id="add-btn" onclick="addTransaction()">Add Transaction</button>
+                <button id="reset-btn" onclick="resetFormFields()">Reset Fields</button>
+            </div>
+        </div>
+
+        <h2>History Log</h2>
+        <ul id="transaction-list"></ul>
+    </div>
     <script src="script.js"></script>
 </body>
-
 </html>

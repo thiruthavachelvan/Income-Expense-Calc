@@ -1,8 +1,43 @@
-var transactions = [];
+let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-var storedData = localStorage.getItem('transactions');
-if (storedData) {
-    transactions = JSON.parse(storedData);
+function addTransaction() {
+    const desc = document.getElementById('description').value;
+    let amount = parseFloat(document.getElementById('amount').value);
+    const type = document.getElementById('type').value; 
+    const editId = document.getElementById('edit-id').value;
+
+    if (desc === "" || isNaN(amount)) {
+        alert("Enter a valid item and amount!");
+        return;
+    }
+
+    // Logic for Income vs Expense choice
+    amount = (type === 'expense') ? -Math.abs(amount) : Math.abs(amount);
+
+    if (editId) {
+        transactions = transactions.map(t => t.id == editId ? { ...t, description: desc, amount: amount } : t);
+    } else {
+        transactions.push({ id: Date.now(), description: desc, amount: amount });
+    }
+
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    resetFormFields();
+    render();
+}
+
+function deleteItem(id) {
+    transactions = transactions.filter(t => t.id !== id);
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    render();
+}
+
+function editItem(id) {
+    const t = transactions.find(t => t.id === id);
+    document.getElementById('description').value = t.description;
+    document.getElementById('amount').value = Math.abs(t.amount);
+    document.getElementById('type').value = t.amount >= 0 ? 'income' : 'expense';
+    document.getElementById('edit-id').value = t.id;
+    document.getElementById('add-btn').textContent = "Update";
 }
 
 function resetFormFields() {
@@ -10,103 +45,33 @@ function resetFormFields() {
     document.getElementById('amount').value = "";
     document.getElementById('edit-id').value = "";
     document.getElementById('add-btn').textContent = "Add Transaction";
-    console.log("Form has been reset");
-}
-
-function updateSummary() {
-    var income = 0;
-    var expense = 0;
-
-    for (var i = 0; i < transactions.length; i++) {
-        var amt = parseFloat(transactions[i].amount);
-        if (amt > 0) { income += amt; }
-        else { expense += amt; }
-    }
-
-    document.getElementById('total-income').textContent = income.toFixed(2);
-    document.getElementById('total-expense').textContent = Math.abs(expense).toFixed(2);
-    document.getElementById('net-balance').textContent = (income + expense).toFixed(2);
 }
 
 function render() {
-    var list = document.getElementById('transaction-list');
+    const list = document.getElementById('transaction-list');
     list.innerHTML = "";
+    let inc = 0, exp = 0;
 
-    var filter = "all";
-    var radios = document.getElementsByName('filter');
-    for (var r = 0; r < radios.length; r++) {
-        if (radios[r].checked) { filter = radios[r].value; }
-    }
+    transactions.forEach(t => {
+        if (t.amount > 0) inc += t.amount;
+        else exp += Math.abs(t.amount);
 
-    for (var i = 0; i < transactions.length; i++) {
-        var t = transactions[i];
-        var amt = parseFloat(t.amount);
-
-        if (filter === "income" && amt <= 0) continue;
-        if (filter === "expense" && amt >= 0) continue;
-
-        var li = document.createElement('li');
-        li.className = "transaction-item";
-        li.innerHTML =
-            '<span><strong>' + t.description + '</strong>: ' + t.amount + '</span>' +
-            '<div class="actions-group">' +
-            '<button class="edit-btn" onclick="editItem(' + t.id + ')">Edit</button>' +
-            '<button class="delete-btn" onclick="deleteItem(' + t.id + ')">Delete</button>' +
-            '</div>';
+        const li = document.createElement('li');
+        li.className = 'transaction-item';
+        li.style.borderLeft = `5px solid ${t.amount > 0 ? '#00f2fe' : '#f953c6'}`;
+        li.innerHTML = `
+            <span><strong>${t.description}</strong>: ${t.amount.toFixed(2)}</span>
+            <div class="actions-group">
+                <button class="edit-btn" onclick="editItem(${t.id})">Edit</button>
+                <button class="delete-btn" onclick="deleteItem(${t.id})">Del</button>
+            </div>
+        `;
         list.appendChild(li);
-    }
-    updateSummary();
-}
+    });
 
-document.getElementById('transaction-form').onsubmit = function (e) {
-    e.preventDefault();
-
-    var desc = document.getElementById('description').value;
-    var amt = document.getElementById('amount').value;
-    var editId = document.getElementById('edit-id').value;
-
-    if (editId) {
-        for (var i = 0; i < transactions.length; i++) {
-            if (transactions[i].id.toString() === editId) {
-                transactions[i].description = desc;
-                transactions[i].amount = amt;
-            }
-        }
-    } else {
-        var newTransaction = {
-            id: Date.now(),
-            description: desc,
-            amount: amt
-        };
-        transactions.push(newTransaction);
-    }
-
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-    resetFormFields();
-    render();
-};
-
-function deleteItem(id) {
-    var filtered = [];
-    for (var i = 0; i < transactions.length; i++) {
-        if (transactions[i].id !== id) {
-            filtered.push(transactions[i]);
-        }
-    }
-    transactions = filtered;
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-    render();
-}
-
-function editItem(id) {
-    for (var i = 0; i < transactions.length; i++) {
-        if (transactions[i].id === id) {
-            document.getElementById('description').value = transactions[i].description;
-            document.getElementById('amount').value = transactions[i].amount;
-            document.getElementById('edit-id').value = transactions[i].id;
-            document.getElementById('add-btn').textContent = "Update Transaction";
-        }
-    }
+    document.getElementById('total-income').textContent = inc.toFixed(2);
+    document.getElementById('total-expense').textContent = exp.toFixed(2);
+    document.getElementById('net-balance').textContent = (inc - exp).toFixed(2);
 }
 
 render();
