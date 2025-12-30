@@ -31,7 +31,6 @@ h1, h2, h3, #add-btn, #reset-btn, .summary-box p {
     border: 1px solid rgba(0, 242, 254, 0.3);
 }
 
-/* BOX ALIGNMENT FIX */
 .balance-summary {
     display: flex;
     gap: 15px;
@@ -40,12 +39,11 @@ h1, h2, h3, #add-btn, #reset-btn, .summary-box p {
 
 .summary-box {
     flex: 1;
-    min-height: 160px; /* Forces boxes to be same size */
+    min-height: 160px; 
     padding: 20px;
     border-radius: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     
-    /* Center the content inside the box */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -53,11 +51,10 @@ h1, h2, h3, #add-btn, #reset-btn, .summary-box p {
     text-align: center;
 }
 
-/* Title alignment fix */
 .box-title {
     font-size: 0.9rem;
     margin: 0 0 15px 0;
-    min-height: 2.5em; /* Ensures 1-line and 2-line titles take same space */
+    min-height: 2.5em; 
     display: flex;
     align-items: center;
     justify-content: center;

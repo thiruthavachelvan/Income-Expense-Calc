@@ -11,7 +11,6 @@ function addTransaction() {
         return;
     }
 
-    // Logic for Income vs Expense choice
     amount = (type === 'expense') ? -Math.abs(amount) : Math.abs(amount);
 
     if (editId) {
