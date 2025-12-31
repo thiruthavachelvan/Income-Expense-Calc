@@ -1,4 +1,7 @@
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+transactions = transactions.map(t => ({ ...t, amount: Number(t.amount) }));
+// Persist normalized amounts back to localStorage (migration)
+localStorage.setItem('transactions', JSON.stringify(transactions));
 
 function addTransaction() {
     const desc = document.getElementById('description').value;
@@ -32,9 +35,10 @@ function deleteItem(id) {
 
 function editItem(id) {
     const t = transactions.find(t => t.id === id);
+    const amt = Number(t.amount) || 0;
     document.getElementById('description').value = t.description;
-    document.getElementById('amount').value = Math.abs(t.amount);
-    document.getElementById('type').value = t.amount >= 0 ? 'income' : 'expense';
+    document.getElementById('amount').value = Math.abs(amt);
+    document.getElementById('type').value = amt >= 0 ? 'income' : 'expense';
     document.getElementById('edit-id').value = t.id;
     document.getElementById('add-btn').textContent = "Update";
 }
@@ -52,14 +56,15 @@ function render() {
     let inc = 0, exp = 0;
 
     transactions.forEach(t => {
-        if (t.amount > 0) inc += t.amount;
-        else exp += Math.abs(t.amount);
+        const amt = Number(t.amount) || 0;
+        if (amt > 0) inc += amt;
+        else exp += Math.abs(amt);
 
         const li = document.createElement('li');
         li.className = 'transaction-item';
-        li.style.borderLeft = `5px solid ${t.amount > 0 ? '#00f2fe' : '#f953c6'}`;
+        li.style.borderLeft = `5px solid ${amt > 0 ? '#00f2fe' : '#f953c6'}`;
         li.innerHTML = `
-            <span><strong>${t.description}</strong>: ${t.amount.toFixed(2)}</span>
+            <span><strong>${t.description}</strong>: ${amt.toFixed(2)}</span>
             <div class="actions-group">
                 <button class="edit-btn" onclick="editItem(${t.id})">Edit</button>
                 <button class="delete-btn" onclick="deleteItem(${t.id})">Del</button>
