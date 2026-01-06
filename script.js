@@ -1,6 +1,6 @@
+// 1. Load and normalize transactions from LocalStorage
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 transactions = transactions.map(t => ({ ...t, amount: Number(t.amount) }));
-localStorage.setItem('transactions', JSON.stringify(transactions));
 
 function addTransaction() {
     const desc = document.getElementById('description').value;
@@ -13,6 +13,7 @@ function addTransaction() {
         return;
     }
 
+    // Ensure expenses are negative, income is positive
     amount = (type === 'expense') ? -Math.abs(amount) : Math.abs(amount);
 
     if (editId) {
@@ -21,14 +22,14 @@ function addTransaction() {
         transactions.push({ id: Date.now(), description: desc, amount: amount });
     }
 
-    localStorage.setItem('transactions', JSON.stringify(transactions));
+    updateStorage();
     resetFormFields();
     render();
 }
 
 function deleteItem(id) {
     transactions = transactions.filter(t => t.id !== id);
-    localStorage.setItem('transactions', JSON.stringify(transactions));
+    updateStorage();
     render();
 }
 
@@ -42,6 +43,10 @@ function editItem(id) {
     document.getElementById('add-btn').textContent = "Update";
 }
 
+function updateStorage() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
 function resetFormFields() {
     document.getElementById('description').value = "";
     document.getElementById('amount').value = "";
@@ -49,35 +54,37 @@ function resetFormFields() {
     document.getElementById('add-btn').textContent = "Add Transaction";
 }
 
+// --- THIS IS THE KEY FUNCTION THAT FIXES YOUR BUG ---
 function render() {
     const list = document.getElementById('transaction-list');
     list.innerHTML = "";
 
-    // 1. Get current filter selection
+    // 1. Get currently selected filter
     const filterRadio = document.querySelector('input[name="filter"]:checked');
     const filterValue = filterRadio ? filterRadio.value : 'all';
 
     let inc = 0, exp = 0;
 
-    // 2. Calculate Totals (Always use ALL data for the summary boxes)
+    // 2. Calculate Totals (Always use ALL data for summary boxes, regardless of filter)
     transactions.forEach(t => {
         const amt = Number(t.amount) || 0;
         if (amt > 0) inc += amt;
         else exp += Math.abs(amt);
     });
 
-    // 3. Filter data for the visual list
+    // 3. Filter the visual list based on radio selection
     const filteredTransactions = transactions.filter(t => {
         if (filterValue === 'all') return true;
-        if (filterValue === 'income') return t.amount > 0;
-        if (filterValue === 'expense') return t.amount < 0;
+        if (filterValue === 'income') return t.amount > 0;  // Only positive
+        if (filterValue === 'expense') return t.amount < 0; // Only negative
     });
 
-    // 4. Render the filtered list
+    // 4. Render only the filtered items
     filteredTransactions.forEach(t => {
         const amt = Number(t.amount) || 0;
         const li = document.createElement('li');
         li.className = 'transaction-item';
+        // Color border based on type
         li.style.borderLeft = `5px solid ${amt > 0 ? '#00f2fe' : '#f953c6'}`;
         li.innerHTML = `
             <span><strong>${t.description}</strong>: ${amt.toFixed(2)}</span>
@@ -89,11 +96,11 @@ function render() {
         list.appendChild(li);
     });
 
-    // Update Totals
+    // Update Summary Values
     document.getElementById('total-income').textContent = inc.toFixed(2);
     document.getElementById('total-expense').textContent = exp.toFixed(2);
     document.getElementById('net-balance').textContent = (inc - exp).toFixed(2);
 }
 
-// Initial render
+// Initial Render
 render();
