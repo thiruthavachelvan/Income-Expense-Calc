@@ -1,6 +1,5 @@
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 transactions = transactions.map(t => ({ ...t, amount: Number(t.amount) }));
-// Persist normalized amounts back to localStorage (migration)
 localStorage.setItem('transactions', JSON.stringify(transactions));
 
 function addTransaction() {
@@ -53,13 +52,30 @@ function resetFormFields() {
 function render() {
     const list = document.getElementById('transaction-list');
     list.innerHTML = "";
+
+    // 1. Get current filter selection
+    const filterRadio = document.querySelector('input[name="filter"]:checked');
+    const filterValue = filterRadio ? filterRadio.value : 'all';
+
     let inc = 0, exp = 0;
 
+    // 2. Calculate Totals (Always use ALL data for the summary boxes)
     transactions.forEach(t => {
         const amt = Number(t.amount) || 0;
         if (amt > 0) inc += amt;
         else exp += Math.abs(amt);
+    });
 
+    // 3. Filter data for the visual list
+    const filteredTransactions = transactions.filter(t => {
+        if (filterValue === 'all') return true;
+        if (filterValue === 'income') return t.amount > 0;
+        if (filterValue === 'expense') return t.amount < 0;
+    });
+
+    // 4. Render the filtered list
+    filteredTransactions.forEach(t => {
+        const amt = Number(t.amount) || 0;
         const li = document.createElement('li');
         li.className = 'transaction-item';
         li.style.borderLeft = `5px solid ${amt > 0 ? '#00f2fe' : '#f953c6'}`;
@@ -73,9 +89,11 @@ function render() {
         list.appendChild(li);
     });
 
+    // Update Totals
     document.getElementById('total-income').textContent = inc.toFixed(2);
     document.getElementById('total-expense').textContent = exp.toFixed(2);
     document.getElementById('net-balance').textContent = (inc - exp).toFixed(2);
 }
 
+// Initial render
 render();
